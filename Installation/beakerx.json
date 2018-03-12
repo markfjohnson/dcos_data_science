@@ -1,15 +1,30 @@
 {
+  "labels": {
+    "HAPROXY_0_REDIRECT_TO_HTTPS": "true",
+    "HAPROXY_GROUP": "external",
+    "HAPROXY_0_ENABLED": "true",
+    "MARATHON_SINGLE_INSTANCE_APP": "true",
+    "HAPROXY_0_VHOST": "vhost.example.com"
+  },
   "id": "/beakerx",
-  "instances": 1,
-  "cpus": 1,
-  "mem": 2048,
-  "cmd": "/usr/local/bin/notebook.sh",
+  "backoffFactor": 1.15,
+  "backoffSeconds": 1,
+  "cmd": "mv /mnt/mesos/sandbox/beakerx-sparkmagic-conda-env.yml /home/conda/work && /usr/local/bin/notebook.sh",
   "container": {
     "type": "MESOS",
+    "volumes": [],
     "docker": {
       "image": "vishnumohan/beakerx-sparkmagic-dcos:0.11.1-1.10.4-2.2.1",
-      "forcePullImage": false
+      "forcePullImage": false,
+      "parameters": []
     }
+  },
+  "cpus": 4,
+  "disk": 0,
+  "env": {
+    "TERM": "xterm-256color",
+    "SPARKMAGIC_CONF_FILE": "/mnt/mesos/sandbox/sparkmagic-dcos-config.json",
+    "SPARKMAGIC_CONF_DIR": "/mnt/mesos/sandbox"
   },
   "fetch": [
     {
@@ -17,47 +32,54 @@
       "extract": false,
       "executable": false,
       "cache": false
-    }
-  ],
-  "env": {
-    "SPARKMAGIC_CONF_DIR": "/mnt/mesos/sandbox",
-    "SPARKMAGIC_CONF_FILE": "/mnt/mesos/sandbox/sparkmagic-dcos-config.json",
-    "TERM": "xterm-256color"
-  },
-  "labels": {
-    "MARATHON_SINGLE_INSTANCE_APP": "true",
-    "HAPROXY_GROUP": "external",
-    "HAPROXY_0_ENABLED": "true",
-    "HAPROXY_0_REDIRECT_TO_HTTPS": "true",
-    "HAPROXY_0_VHOST": "vhost.example.com"
-  },
-  "portDefinitions": [
+    },
     {
-      "port": 0,
-      "protocol": "tcp",
-      "name": "jupyter",
-      "labels": {
-        "VIP_0": "/beakerx:8888"
-      }
+      "uri": "https://raw.githubusercontent.com/markfjohnson/dcos_data_science/master/Installation/beakerx-sparkmagic-conda-env.yml",
+      "extract": true,
+      "executable": false,
+      "cache": false
     }
   ],
   "healthChecks": [
     {
-      "portIndex": 0,
-      "protocol": "MESOS_HTTP",
-      "path": "/api",
       "gracePeriodSeconds": 30,
       "intervalSeconds": 20,
+      "maxConsecutiveFailures": 3,
+      "portIndex": 0,
       "timeoutSeconds": 10,
-      "maxConsecutiveFailures": 3
+      "delaySeconds": 15,
+      "protocol": "MESOS_HTTP",
+      "path": "/api"
     }
   ],
+  "instances": 1,
+  "maxLaunchDelaySeconds": 3600,
+  "mem": 2048,
+  "gpus": 0,
+  "networks": [
+    {
+      "mode": "host"
+    }
+  ],
+  "portDefinitions": [
+    {
+      "labels": {
+        "VIP_0": "/beakerx:8888"
+      },
+      "name": "jupyter",
+      "protocol": "tcp",
+      "port": 10101
+    }
+  ],
+  "requirePorts": false,
   "upgradeStrategy": {
-    "minimumHealthCapacity": 0,
-    "maximumOverCapacity": 0
+    "maximumOverCapacity": 0,
+    "minimumHealthCapacity": 0
   },
+  "killSelection": "YOUNGEST_FIRST",
   "unreachableStrategy": {
-    "expungeAfterSeconds": 0,
-    "inactiveAfterSeconds": 0
-  }
+    "inactiveAfterSeconds": 0,
+    "expungeAfterSeconds": 0
+  },
+  "constraints": []
 }

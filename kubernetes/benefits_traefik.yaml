@@ -1,0 +1,62 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: wls-benefits-deployment
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: wls-benefits-deployment
+    spec:
+      containers:
+      - name: weblogic12
+        image: markfjohnson/wls_benefits_k8s
+        ports:
+        - containerPort: 8001
+        - containerPort: 7001
+        command: ["/bin/sh", "-c", "env|sort && ls -lt && pwd && bash startWebLogic.sh"]
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: wls-benefits-service
+  name:  wls-benefits-service
+spec:
+  ports:
+    # The port that this service should serve on.
+    - port: 8001
+      name: app
+    - port: 7001
+      name: console
+  # Label keys and values that must match in order to receive traffic for this service.
+  selector:
+    app: wls-benefits-deployment
+  type: ClusterIP
+
+
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: benefits-ingress
+  annotations:
+    kubernetes.io/ingress.class: traefik
+
+spec:
+  rules:
+    - http:
+        paths:
+        - path: /console
+          backend:
+            serviceName: wls-benefits-service
+            servicePort: 7001
+        - path: /benefits
+          backend:
+            serviceName: wls-benefits-service
+            servicePort: 8001
+

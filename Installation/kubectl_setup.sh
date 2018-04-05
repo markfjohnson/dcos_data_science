@@ -10,11 +10,13 @@ echo $HNAME
 #if [ $# -ne 1 ];
 #    then echo "illegal number of parameters...pass the dcos master url"
 #el
-    kubectl config set-cluster dcos-k8s --server=http://localhost:9000
-    kubectl config set-context dcos-k8s --cluster=dcos-k8s --namespace=default
-    kubectl config use-context dcos-k8s
-    echo "configuring ssh tunnel for $HNAME"
-    ssh -4 -f -i ~/dcos_scripts/ccm.pem -N -L 9000:apiserver-insecure.kubernetes.l4lb.thisdcos.directory:9000 core@$HNAME
+kubectl config set-cluster dcos-k8s --server=http://localhost:9000
+kubectl config set-context dcos-k8s --cluster=dcos-k8s --namespace=default
+kubectl config use-context dcos-k8s
+echo "configuring ssh tunnel for $HNAME"
+dcos kubernetes kubeconfig
+#    ssh -4 -f -i ~/dcos_scripts/ccm.pem -N -L 9000:apiserver-insecure.kubernetes.l4lb.thisdcos.directory:9000 core@$HNAME
+
 #fi
 kubectl delete deployments --all
 kubectl delete service --all
@@ -35,10 +37,11 @@ kubectl create -f prometheus.yaml
 
 kubectl create -f traefik.yaml
 
-kubectl create -f ../wls12_benefits_k8s/nginxservice.yaml
-kubectl create -f ../wls12_benefits_k8s/benefits_traefik.yaml
+kubectl create -f ../kubernetes/nginxservice.yaml
+kubectl create -f ../kubernetes/benefits_traefik.yaml
 
 ### The token for the dashboard
+~/dcos_scripts/find_public_node.sh
 kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep admin-user | awk '{print $1}')
 open http://localhost:9000/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/
 

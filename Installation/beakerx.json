@@ -6,11 +6,23 @@
     "MARATHON_SINGLE_INSTANCE_APP": "true",
     "HAPROXY_0_VHOST": "vhost.example.com"
   },
-  "id": "/beakerx",
+  "id": "/dept-a/jupyter",
   "backoffFactor": 1.15,
   "backoffSeconds": 1,
-  "cmd": "mv /mnt/mesos/sandbox/beakerx-sparkmagic-conda-env.yml /home/conda/work && /usr/local/bin/notebook.sh",
+  "cmd": "tini -s -- /usr/local/bin/notebook.sh",
   "container": {
+    "portMappings": [
+      {
+        "containerPort": 0,
+        "hostPort": 10104,
+        "labels": {
+          "VIP_0": "/beakerx:8888"
+        },
+        "protocol": "tcp",
+        "servicePort": 10104,
+        "name": "jupyter"
+      }
+    ],
     "type": "MESOS",
     "volumes": [],
     "docker": {
@@ -19,23 +31,17 @@
       "parameters": []
     }
   },
-  "cpus": 4,
+  "cpus": 1,
   "disk": 0,
   "env": {
-    "TERM": "xterm-256color",
+    "SPARKMAGIC_CONF_DIR": "/mnt/mesos/sandbox",
     "SPARKMAGIC_CONF_FILE": "/mnt/mesos/sandbox/sparkmagic-dcos-config.json",
-    "SPARKMAGIC_CONF_DIR": "/mnt/mesos/sandbox"
+    "TERM": "xterm-256color"
   },
   "fetch": [
     {
       "uri": "https://s3.amazonaws.com/vishnu-mohan/sparkmagic/sparkmagic-dcos-config.json",
       "extract": false,
-      "executable": false,
-      "cache": false
-    },
-    {
-      "uri": "https://raw.githubusercontent.com/markfjohnson/dcos_data_science/master/Installation/beakerx-sparkmagic-conda-env.yml",
-      "extract": true,
       "executable": false,
       "cache": false
     }
@@ -58,17 +64,7 @@
   "gpus": 0,
   "networks": [
     {
-      "mode": "host"
-    }
-  ],
-  "portDefinitions": [
-    {
-      "labels": {
-        "VIP_0": "/beakerx:8888"
-      },
-      "name": "jupyter",
-      "protocol": "tcp",
-      "port": 10101
+      "mode": "container/bridge"
     }
   ],
   "requirePorts": false,

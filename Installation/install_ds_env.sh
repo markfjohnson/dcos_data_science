@@ -1,15 +1,20 @@
 #!/usr/bin/env bash
+dcos package install --yes dcos-enterprise-cli --cli
 dcos package install --yes hdfs
 dcos package install --yes marathon-lb
-dcos package install --yes dcos-enterprise-cli --cli
+#dcos package install --yes cassandra
+dcos package install --yes spark --options=spark_options.json
+dcos marathon app add livy-marathon.json
 dcos marathon app add beakerx.json
-dcos package install --yes kubernetes --options=k8s_options.json
+dcos marathon pod add metrics.json
+dcos marathon app add prometheus.json
+dcos marathon app add grafana.json
+#dcos package install --yes postgresql
+#dcos package install --yes kafka
+dcos marathon app add prometheus.json
 
-dcos marathon app add ../wls12_benefits/benefits_autoscale.json
-#echo "Deploy benefits"
-#dcos marathon app add ../Weblogic/demo_examples/weblogic_benefits_deploy.json
-echo "Deploy Sample"
-dcos marathon app add ../wls12_benefits/weblogic_sample_deploy.json
+#dcos package install --yes kubernetes --options=k8s_options.json
+
 
 echo "Setup security rules"
 dcos security org groups create dept-a

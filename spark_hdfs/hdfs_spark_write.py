@@ -8,5 +8,7 @@ sc = spark.sparkContext
 values = sc.parallelize(range(1,10))
 values.saveAsTextFile("hdfs://hdfs/testfile")
 
-#inp_file = sc.textFile("hdfs://")
+inp_file = sc.textFile("hdfs://hdfs/testfile")
+df_test = inp_file.toDf()
+df_test.show()
 print("Done")
